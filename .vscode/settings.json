@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "add.h": "c",
+        "stdio.h": "c",
+        "pmap_clnt.h": "c"
+    }
+}
