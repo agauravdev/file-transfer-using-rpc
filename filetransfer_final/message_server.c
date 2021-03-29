@@ -6,17 +6,44 @@
 
 #include "message.h"
 
+int check = 0;
+
+// Can also make a unique filename here as on actual servers automatic file names are provided and then inserted into the db. 
 int *send_message_1_svc(message *argp, struct svc_req *rqstp)
 {
 	static int result;
 	int num;
 
-	printf("Send message function with params %s %d is called\n", argp->str, argp->length);
+	char* filename = malloc(sizeof(char)*32);
+	filename[0] = '\0';
+	strcat(filename, "server_");
+	strcat(filename, argp->file);
+
+	printf("Writing to file %s\n", filename);
+
+#ifdef TEST
+	if(check == 1){
+		result = 0;
+		check = 0;
+		return &result;
+	} else check = 1;
+#endif
 
 	FILE *output;
-	output = fopen(argp->file, "a");
+	output = fopen(filename, "a");
 
 	if (output == NULL)
+	{
+		result = 0;
+		return &result;
+	}
+
+	int sum = 0;
+	int i = 0;
+	while (argp->str[i] != '\0')
+		sum = sum + argp->str[i++];
+
+	if (sum != argp->length)
 	{
 		result = 0;
 		return &result;

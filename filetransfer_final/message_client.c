@@ -5,6 +5,7 @@
  */
 
 #include "message.h"
+#include <unistd.h>
 
 int send_message_prog_1(char *host, char *file, char *str, int length)
 {
@@ -39,14 +40,13 @@ int main(int argc, char *argv[])
 	char *host;
 	char *filename;
 
-	if (argc < 4)
+	if (argc < 3)
 	{
-		printf("usage: %s server_host filename filename-on-server\n", argv[0]);
+		printf("usage: %s server_host filename\n", argv[0]);
 		exit(1);
 	}
 	host = argv[1];
 	filename = argv[2];
-	char *filename_on_server = argv[3];
 
 	FILE *filetosend = fopen(filename, "r");
 
@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
 	int n = 0;
 	char *str = malloc(sizeof(char) * 32);
 	int c;
+	int sum = 0;
 
 	// printf("reached here");
 	// fflush(stdout);
@@ -66,24 +67,30 @@ int main(int argc, char *argv[])
 	{
 		// printf("reached here");
 		// fflush(stdout);
-
 		str[n++] = (char)c;
+		sum = sum + c;
+		// printf("Partial sum : %d\n", sum);
+
 		// 	printf("reached here2");
 		// fflush(stdout);
 		if (n == 32)
 		{
+			sleep(1);
 			str[n] = '\0';
+			// printf("String : %s\nSum :  %d\n", str, sum);
 			int retries = 0;
-			while (send_message_prog_1(host, filename_on_server, str, n) == 0)
+			while (send_message_prog_1(host, filename, str, sum) == 0)
 			{
+				printf("Some error occured, retrying\n");
 				retries++;
-				if (retries == 5)
+				if (retries >= 5)
 				{
-					printf("Failed to send file to the server, please try again.");
+					printf("Failed to send file to the server, please try again.\n");
 					exit(0);
 				}
 			}
 			n = 0;
+			sum = 0;
 		}
 	}
 
@@ -91,12 +98,14 @@ int main(int argc, char *argv[])
 	{
 		str[n] = '\0';
 		int retries = 0;
-		while (send_message_prog_1(host, filename_on_server, str, n) == 0)
+		while (send_message_prog_1(host, filename, str, sum) == 0)
 		{
+			printf("Some error occured, retrying\n");
+
 			retries++;
 			if (retries == 5)
 			{
-				printf("Failed to send file to the server, please try again.");
+				printf("Failed to send file to the server, please try again.\n");
 				exit(0);
 			}
 		}
